@@ -47,12 +47,22 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background: linear-gradient(180deg, #1a3a2a 0%, #2d5a3a 40%, #1a3a2a 100%);
+            background: url('images/bg_game_0.jpg') center/cover no-repeat;
             display: flex;
             flex-direction: column;
             justify-content: center;
             align-items: center;
             z-index: 10;
+        }
+        
+        #start-screen::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
         }
         
         .title {
@@ -61,25 +71,31 @@
             text-shadow: 3px 3px 6px rgba(0,0,0,0.8), 0 0 20px rgba(255,215,0,0.3);
             margin-bottom: 10px;
             text-align: center;
+            position: relative;
+            z-index: 1;
         }
         
         .subtitle {
             font-size: 1em;
-            color: rgba(255,255,255,0.8);
+            color: rgba(255,255,255,0.9);
             margin-bottom: 40px;
+            position: relative;
+            z-index: 1;
         }
         
         .character-select {
             display: flex;
             gap: 15px;
             margin-bottom: 30px;
+            position: relative;
+            z-index: 1;
         }
         
         .char-btn {
             width: 85px;
             height: 110px;
-            background: rgba(255,255,255,0.1);
-            border: 2px solid rgba(255,255,255,0.3);
+            background: rgba(255,255,255,0.15);
+            border: 2px solid rgba(255,255,255,0.4);
             border-radius: 12px;
             display: flex;
             flex-direction: column;
@@ -87,17 +103,21 @@
             justify-content: center;
             cursor: pointer;
             transition: all 0.3s;
+            backdrop-filter: blur(5px);
         }
         
         .char-btn:hover, .char-btn.selected {
             border-color: #FFD700;
-            background: rgba(255,215,0,0.2);
+            background: rgba(255,215,0,0.3);
             transform: scale(1.05);
         }
         
         .char-icon {
-            font-size: 2.2em;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
             margin-bottom: 5px;
+            object-fit: cover;
         }
         
         .char-name {
@@ -107,7 +127,7 @@
         }
         
         .char-skill {
-            color: rgba(255,255,255,0.6);
+            color: rgba(255,255,255,0.7);
             font-size: 0.65em;
             margin-top: 3px;
         }
@@ -123,6 +143,8 @@
             cursor: pointer;
             margin-top: 20px;
             box-shadow: 0 5px 20px rgba(255,165,0,0.5);
+            position: relative;
+            z-index: 1;
         }
         
         .start-btn:active {
@@ -130,10 +152,12 @@
         }
         
         .guide {
-            color: rgba(255,255,255,0.6);
+            color: rgba(255,255,255,0.7);
             font-size: 0.85em;
             margin-top: 30px;
             text-align: center;
+            position: relative;
+            z-index: 1;
         }
         
         /* 游戏结束界面 */
@@ -143,7 +167,7 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(0,0,0,0.9);
+            background: rgba(0,0,0,0.85);
             display: none;
             flex-direction: column;
             justify-content: center;
@@ -188,24 +212,13 @@
         }
         
         .hud-item {
-            background: rgba(0,0,0,0.5);
-            padding: 8px 15px;
-            border-radius: 20px;
+            background: rgba(0,0,0,0.6);
+            padding: 10px 18px;
+            border-radius: 25px;
             color: #fff;
-            font-size: 0.9em;
-        }
-        
-        /* 操作提示 */
-        .control-hint {
-            position: absolute;
-            bottom: 20px;
-            left: 0;
-            width: 100%;
-            display: flex;
-            justify-content: center;
-            gap: 15px;
-            color: rgba(255,255,255,0.6);
-            font-size: 0.8em;
+            font-size: 1em;
+            font-weight: bold;
+            border: 2px solid rgba(255,215,0,0.5);
         }
     </style>
 </head>
@@ -219,18 +232,18 @@
             <p class="subtitle">3D神庙跑酷 · 三国篇</p>
             
             <div class="character-select">
-                <div class="char-btn selected" data-char="liubei">
-                    <span class="char-icon">👑</span>
+                <div class="char-btn selected" data-char="liubei" data-img="player_0">
+                    <img class="char-icon" src="images/player_0.jpg">
                     <span class="char-name">刘备</span>
                     <span class="char-skill">双倍金币</span>
                 </div>
-                <div class="char-btn" data-char="guanyu">
-                    <span class="char-icon">⚔️</span>
+                <div class="char-btn" data-char="guanyu" data-img="player_1">
+                    <img class="char-icon" src="images/player_1.jpg">
                     <span class="char-name">关羽</span>
                     <span class="char-skill">跳跃强化</span>
                 </div>
-                <div class="char-btn" data-char="zhangfei">
-                    <span class="char-icon">🗡️</span>
+                <div class="char-btn" data-char="zhangfei" data-img="player_2">
+                    <img class="char-icon" src="images/player_2.jpg">
                     <span class="char-name">张飞</span>
                     <span class="char-skill">滑铲强化</span>
                 </div>
@@ -281,14 +294,13 @@
             speed: 5,
             maxSpeed: 15,
             character: 'liubei',
+            characterImg: null,
             player: {
                 lane: 1,
                 jumping: false,
                 sliding: false,
                 jumpStart: 0,
                 slideStart: 0,
-                y: 0,
-                targetY: 0,
                 z: 0
             },
             roadSegments: [],
@@ -298,15 +310,23 @@
             currentSegmentIndex: 0,
             playerZ: 0,
             cameraOffset: { x: 0, angle: 0 },
+            bgImages: [],
+            decorationImages: [],
+            coinImage: null,
+            obstacleImage: null,
+            roadImage: null,
             touchStartX: 0,
-            touchStartY: 0
+            touchStartY: 0,
+            assetsLoaded: false,
+            assetsToLoad: 0,
+            assetsLoadedCount: 0
         };
         
         // 角色属性
         const characters = {
-            liubei: { name: '刘备', icon: '👑', color: '#4169E1' },
-            guanyu: { name: '关羽', icon: '⚔️', color: '#228B22' },
-            zhangfei: { name: '张飞', icon: '🗡️', color: '#8B0000' }
+            liubei: { name: '刘备', color: '#4169E1' },
+            guanyu: { name: '关羽', color: '#228B22' },
+            zhangfei: { name: '张飞', color: '#8B0000' }
         };
         
         // 道路段类型
@@ -319,29 +339,33 @@
             { type: 'gentle_right', turn: 8 }
         ];
         
-        // 障碍物
+        // 障碍物类型
         const obstacleTypes = [
-            { type: 'rock', emoji: '🪨', jumpable: false },
-            { type: 'log', emoji: '🪵', jumpable: true },
-            { type: 'hole', emoji: '🕳️', slideable: true }
+            { type: 'rock' },
+            { type: 'log' },
+            { type: 'hole' }
         ];
         
-        // 装饰物
-        const decorTypes = {
-            pillar: { emoji: '🏛️', side: 'both' },
-            pillar2: { emoji: '🗼', side: 'both' },
-            tree: { emoji: '🌲', side: 'both' },
-            lantern: { emoji: '🏮', side: 'both' },
-            vine: { emoji: '🌿', side: 'both' }
-        };
+        // 加载图片
+        function loadImage(src) {
+            return new Promise((resolve) => {
+                const img = new Image();
+                img.onload = () => resolve(img);
+                img.onerror = () => resolve(null);
+                img.src = src;
+            });
+        }
         
         // 初始化
-        function init() {
+        async function init() {
             game.canvas = document.getElementById('gameCanvas');
             game.ctx = game.canvas.getContext('2d');
             
             resizeCanvas();
             window.addEventListener('resize', resizeCanvas);
+            
+            // 预加载图片资源
+            await loadAssets();
             
             // 触摸事件
             game.canvas.addEventListener('touchstart', handleTouchStart, { passive: false });
@@ -360,6 +384,7 @@
                     document.querySelectorAll('.char-btn').forEach(b => b.classList.remove('selected'));
                     btn.classList.add('selected');
                     game.character = btn.dataset.char;
+                    game.characterImg = game.playerImages[btn.dataset.img] || game.playerImages['player_0'];
                 });
             });
             
@@ -368,6 +393,40 @@
             document.getElementById('restartBtn').addEventListener('click', startGame);
             
             document.getElementById('bestScore').textContent = `最高纪录: ${game.bestScore}米`;
+        }
+        
+        // 加载游戏资源
+        async function loadAssets() {
+            // 加载背景图
+            for (let i = 0; i < 4; i++) {
+                const img = await loadImage(`images/bg_game_${i}.jpg`);
+                if (img) game.bgImages.push(img);
+            }
+            
+            // 加载角色图
+            game.playerImages = {};
+            for (let i = 0; i < 3; i++) {
+                const img = await loadImage(`images/player_${i}.jpg`);
+                if (img) game.playerImages[`player_${i}`] = img;
+            }
+            game.characterImg = game.playerImages['player_0'];
+            
+            // 加载装饰图
+            for (let i = 0; i < 3; i++) {
+                const img = await loadImage(`images/decoration_${i}.jpg`);
+                if (img) game.decorationImages.push(img);
+            }
+            
+            // 加载金币图
+            game.coinImage = await loadImage('images/coin_0.jpg');
+            
+            // 加载障碍图
+            game.obstacleImage = await loadImage('images/obstacle_0.jpg');
+            
+            // 加载道路图
+            game.roadImage = await loadImage('images/road_0.jpg');
+            
+            game.assetsLoaded = true;
         }
         
         function resizeCanvas() {
@@ -545,7 +604,6 @@
             // 更新相机角度（跟随道路拐弯）
             const currentSeg = getSegmentAtZ(game.playerZ);
             if (currentSeg) {
-                // 平滑过渡到目标角度
                 const targetAngle = currentSeg.angle * 0.3;
                 game.cameraOffset.angle += (targetAngle - game.cameraOffset.angle) * 0.05;
             }
@@ -568,7 +626,7 @@
             }
             
             // 生成装饰
-            if (Math.random() < 0.1) {
+            if (Math.random() < 0.08) {
                 spawnDecoration();
             }
             
@@ -576,7 +634,6 @@
             game.obstacles = game.obstacles.filter(obs => {
                 obs.z -= game.speed;
                 
-                // 碰撞检测
                 if (obs.z < game.playerZ + 50 && obs.z > game.playerZ - 30) {
                     if (obs.lane === game.player.lane) {
                         if (obs.jumpable && game.player.jumping) {
@@ -648,14 +705,13 @@
         
         // 生成装饰
         function spawnDecoration() {
-            const types = Object.keys(decorTypes);
-            const type = types[Math.floor(Math.random() * types.length)];
-            const side = decorTypes[type].side === 'both' ? (Math.random() > 0.5 ? 'left' : 'right') : decorTypes[type].side;
+            const side = Math.random() > 0.5 ? 'left' : 'right';
+            const imgIndex = Math.floor(Math.random() * game.decorationImages.length);
             
             game.decorations.push({
                 z: game.playerZ + 500 + Math.random() * 500,
                 side: side,
-                emoji: decorTypes[type].emoji,
+                imgIndex: imgIndex,
                 offsetX: (Math.random() - 0.5) * 100
             });
         }
@@ -686,11 +742,7 @@
             const w = game.width;
             const h = game.height;
             
-            // 清空画布
-            ctx.fillStyle = '#1a3a2a';
-            ctx.fillRect(0, 0, w, h);
-            
-            // 绘制天空/背景
+            // 绘制背景
             drawBackground(ctx, w, h);
             
             // 绘制道路
@@ -711,25 +763,34 @@
         
         // 绘制背景
         function drawBackground(ctx, w, h) {
-            // 渐变天空
-            const gradient = ctx.createLinearGradient(0, 0, 0, h);
-            gradient.addColorStop(0, '#1a3a2a');
-            gradient.addColorStop(0.3, '#2d5a3a');
-            gradient.addColorStop(1, '#1a3a2a');
-            ctx.fillStyle = gradient;
-            ctx.fillRect(0, 0, w, h);
-            
-            // 添加一些模糊的光斑效果
-            ctx.fillStyle = 'rgba(255, 215, 0, 0.1)';
-            ctx.beginPath();
-            ctx.arc(w * 0.3, h * 0.2, 50, 0, Math.PI * 2);
-            ctx.fill();
+            if (game.bgImages.length > 0) {
+                const bgIndex = Math.floor(game.score / 500) % game.bgImages.length;
+                const bg = game.bgImages[bgIndex];
+                
+                // 绘制背景图
+                ctx.drawImage(bg, 0, 0, w, h);
+                
+                // 添加暗角效果
+                const gradient = ctx.createRadialGradient(w/2, h/2, 0, w/2, h/2, w * 0.7);
+                gradient.addColorStop(0, 'rgba(0,0,0,0)');
+                gradient.addColorStop(1, 'rgba(0,0,0,0.5)');
+                ctx.fillStyle = gradient;
+                ctx.fillRect(0, 0, w, h);
+            } else {
+                // 备用背景
+                const gradient = ctx.createLinearGradient(0, 0, 0, h);
+                gradient.addColorStop(0, '#1a3a2a');
+                gradient.addColorStop(0.5, '#2d5a3a');
+                gradient.addColorStop(1, '#1a3a2a');
+                ctx.fillStyle = gradient;
+                ctx.fillRect(0, 0, w, h);
+            }
         }
         
         // 绘制道路
         function drawRoad(ctx, w, h) {
-            const horizon = h * 0.35;
-            const playerScreenY = h * 0.8;
+            const horizon = h * 0.38;
+            const playerScreenY = h * 0.78;
             
             // 收集可见的道路点
             const roadPoints = [];
@@ -739,14 +800,13 @@
                 const relZ = game.playerZ - seg.z;
                 
                 if (relZ > -ROAD_SEGMENT_LENGTH * 2 && relZ < 1500) {
-                    // 计算透视
                     const scale = 300 / (300 + relZ);
                     const screenY = horizon + (playerScreenY - horizon) * scale;
                     
-                    // 根据道路角度计算左右边界偏移
                     const angleOffset = Math.sin((seg.angle - game.cameraOffset.angle) * Math.PI / 180) * relZ * 0.1;
-                    const leftX = w/2 - ROAD_WIDTH * scale + angleOffset * scale;
-                    const rightX = w/2 + ROAD_WIDTH * scale + angleOffset * scale;
+                    const roadWidth = ROAD_WIDTH * scale;
+                    const leftX = w/2 - roadWidth/2 + angleOffset * scale;
+                    const rightX = w/2 + roadWidth/2 + angleOffset * scale;
                     
                     roadPoints.push({
                         y: screenY,
@@ -758,7 +818,6 @@
                 }
             }
             
-            // 按距离排序（远的先画）
             roadPoints.sort((a, b) => b.z - a.z);
             
             // 绘制道路
@@ -766,36 +825,52 @@
                 const p1 = roadPoints[i];
                 const p2 = roadPoints[i + 1];
                 
-                // 道路渐变
-                const gradient = ctx.createLinearGradient(0, p1.y, 0, p2.y);
-                gradient.addColorStop(0, '#3a2a1a');
-                gradient.addColorStop(1, '#5a4a3a');
-                
-                ctx.fillStyle = gradient;
-                ctx.beginPath();
-                ctx.moveTo(p1.leftX, p1.y);
-                ctx.lineTo(p1.rightX, p1.y);
-                ctx.lineTo(p2.rightX, p2.y);
-                ctx.lineTo(p2.leftX, p2.y);
-                ctx.closePath();
-                ctx.fill();
-                
-                // 道路边线
-                ctx.strokeStyle = '#8B7355';
-                ctx.lineWidth = 2;
-                ctx.beginPath();
-                ctx.moveTo(p1.leftX, p1.y);
-                ctx.lineTo(p2.leftX, p2.y);
-                ctx.moveTo(p1.rightX, p1.y);
-                ctx.lineTo(p2.rightX, p2.y);
-                ctx.stroke();
+                // 如果有道路图片，使用图片
+                if (game.roadImage && p1.scale > 0.1) {
+                    const gradient = ctx.createLinearGradient(0, p1.y, 0, p2.y);
+                    gradient.addColorStop(0, 'rgba(90,74,58,0.9)');
+                    gradient.addColorStop(1, 'rgba(58,42,26,0.95)');
+                    
+                    ctx.fillStyle = gradient;
+                    ctx.beginPath();
+                    ctx.moveTo(p1.leftX, p1.y);
+                    ctx.lineTo(p1.rightX, p1.y);
+                    ctx.lineTo(p2.rightX, p2.y);
+                    ctx.lineTo(p2.leftX, p2.y);
+                    ctx.closePath();
+                    ctx.fill();
+                    
+                    // 道路边线
+                    ctx.strokeStyle = 'rgba(139,115,85,0.8)';
+                    ctx.lineWidth = 3 * p1.scale;
+                    ctx.beginPath();
+                    ctx.moveTo(p1.leftX, p1.y);
+                    ctx.lineTo(p2.leftX, p2.y);
+                    ctx.moveTo(p1.rightX, p1.y);
+                    ctx.lineTo(p2.rightX, p2.y);
+                    ctx.stroke();
+                } else {
+                    // 备用绘制
+                    const gradient = ctx.createLinearGradient(0, p1.y, 0, p2.y);
+                    gradient.addColorStop(0, '#5a4a3a');
+                    gradient.addColorStop(1, '#3a2a1a');
+                    
+                    ctx.fillStyle = gradient;
+                    ctx.beginPath();
+                    ctx.moveTo(p1.leftX, p1.y);
+                    ctx.lineTo(p1.rightX, p1.y);
+                    ctx.lineTo(p2.rightX, p2.y);
+                    ctx.lineTo(p2.leftX, p2.y);
+                    ctx.closePath();
+                    ctx.fill();
+                }
             }
         }
         
         // 绘制装饰
         function drawDecorations(ctx, w, h) {
-            const horizon = h * 0.35;
-            const playerScreenY = h * 0.8;
+            const horizon = h * 0.38;
+            const playerScreenY = h * 0.78;
             
             game.decorations.forEach(dec => {
                 const relZ = game.playerZ - dec.z;
@@ -806,54 +881,64 @@
                 
                 let screenX;
                 if (dec.side === 'left') {
-                    screenX = w * 0.2 + dec.offsetX * scale + game.cameraOffset.angle * 2;
+                    screenX = w * 0.15 + dec.offsetX * scale + game.cameraOffset.angle * 2;
                 } else {
-                    screenX = w * 0.8 + dec.offsetX * scale + game.cameraOffset.angle * 2;
+                    screenX = w * 0.85 + dec.offsetX * scale + game.cameraOffset.angle * 2;
                 }
                 
-                if (screenY > horizon && screenY < h) {
-                    const size = 40 * scale;
-                    ctx.font = `${size}px Arial`;
-                    ctx.textAlign = 'center';
-                    ctx.textBaseline = 'middle';
-                    ctx.globalAlpha = Math.min(1, scale * 2);
-                    ctx.fillText(dec.emoji, screenX, screenY);
-                    ctx.globalAlpha = 1;
+                if (screenY > horizon && screenY < h && scale > 0.1) {
+                    const img = game.decorationImages[dec.imgIndex];
+                    if (img) {
+                        const size = 80 * scale;
+                        ctx.globalAlpha = Math.min(0.8, scale * 1.5);
+                        ctx.drawImage(img, screenX - size/2, screenY - size/2, size, size);
+                        ctx.globalAlpha = 1;
+                    }
                 }
             });
         }
         
         // 绘制金币
         function drawCoins(ctx, w, h) {
-            const horizon = h * 0.35;
-            const playerScreenY = h * 0.8;
+            const horizon = h * 0.38;
+            const playerScreenY = h * 0.78;
             
             game.coinItems.forEach(coin => {
                 const relZ = game.playerZ - coin.z;
                 if (relZ < 0 || relZ > 800) return;
                 
                 const scale = 150 / (150 + relZ);
-                const screenY = horizon + (playerScreenY - horizon) * scale - 20 * scale;
+                const screenY = horizon + (playerScreenY - horizon) * scale - 30 * scale;
                 
-                const laneOffset = (coin.lane - 1) * 40 * scale;
+                const laneOffset = (coin.lane - 1) * 50 * scale;
                 const screenX = w/2 + laneOffset + game.cameraOffset.angle * 2;
                 
                 if (screenY > horizon) {
-                    const size = 30 * scale;
-                    ctx.font = `${size}px Arial`;
-                    ctx.textAlign = 'center';
-                    ctx.textBaseline = 'middle';
-                    ctx.fillText('🪙', screenX, screenY);
+                    if (game.coinImage) {
+                        const size = 40 * scale;
+                        ctx.drawImage(game.coinImage, screenX - size/2, screenY - size/2, size, size);
+                    } else {
+                        // 备用emoji
+                        ctx.font = `${30 * scale}px Arial`;
+                        ctx.textAlign = 'center';
+                        ctx.textBaseline = 'middle';
+                        ctx.fillText('🪙', screenX, screenY);
+                    }
+                    
+                    // 光晕
+                    ctx.fillStyle = 'rgba(255,215,0,0.3)';
+                    ctx.beginPath();
+                    ctx.arc(screenX, screenY, 25 * scale, 0, Math.PI * 2);
+                    ctx.fill();
                 }
             });
         }
         
         // 绘制障碍物
         function drawObstacles(ctx, w, h) {
-            const horizon = h * 0.35;
-            const playerScreenY = h * 0.8;
+            const horizon = h * 0.38;
+            const playerScreenY = h * 0.78;
             
-            // 按距离排序（远的先画）
             const sorted = [...game.obstacles].sort((a, b) => b.z - a.z);
             
             sorted.forEach(obs => {
@@ -863,15 +948,19 @@
                 const scale = 150 / (150 + relZ);
                 const screenY = horizon + (playerScreenY - horizon) * scale;
                 
-                const laneOffset = (obs.lane - 1) * 40 * scale;
+                const laneOffset = (obs.lane - 1) * 50 * scale;
                 const screenX = w/2 + laneOffset + game.cameraOffset.angle * 2;
                 
                 if (screenY > horizon) {
-                    const size = 50 * scale;
-                    ctx.font = `${size}px Arial`;
-                    ctx.textAlign = 'center';
-                    ctx.textBaseline = 'middle';
-                    ctx.fillText(obs.emoji, screenX, screenY);
+                    if (game.obstacleImage) {
+                        const size = 80 * scale;
+                        ctx.drawImage(game.obstacleImage, screenX - size/2, screenY - size/2, size, size);
+                    } else {
+                        ctx.font = `${50 * scale}px Arial`;
+                        ctx.textAlign = 'center';
+                        ctx.textBaseline = 'middle';
+                        ctx.fillText('🪨', screenX, screenY);
+                    }
                 }
             });
         }
@@ -879,7 +968,7 @@
         // 绘制玩家
         function drawPlayer(ctx, w, h) {
             const playerScreenX = w * 0.5;
-            const playerScreenY = h * 0.78;
+            const playerScreenY = h * 0.75;
             const char = characters[game.character];
             
             ctx.save();
@@ -890,35 +979,41 @@
             if (game.player.jumping) {
                 const elapsed = Date.now() - game.player.jumpStart;
                 const progress = elapsed / JUMP_DURATION;
-                jumpOffset = -Math.sin(progress * Math.PI) * 50;
+                jumpOffset = -Math.sin(progress * Math.PI) * 60;
             }
             
             // 滑铲效果
             let scaleX = 1, scaleY = 1;
             if (game.player.sliding) {
-                scaleX = 1.5;
+                scaleX = 1.3;
                 scaleY = 0.5;
             }
             
             ctx.scale(scaleX, scaleY);
             
             // 阴影
-            ctx.fillStyle = 'rgba(0,0,0,0.3)';
+            ctx.fillStyle = 'rgba(0,0,0,0.4)';
             ctx.beginPath();
-            ctx.ellipse(0, 10 - jumpOffset, 30, 12, 0, 0, Math.PI * 2);
+            ctx.ellipse(0, 20 - jumpOffset, 35, 15, 0, 0, Math.PI * 2);
             ctx.fill();
             
-            // 玩家角色（背对屏幕）
-            ctx.font = '70px Arial';
-            ctx.textAlign = 'center';
-            ctx.textBaseline = 'middle';
-            ctx.fillText(char.icon, 0, -20 - jumpOffset);
+            // 绘制角色图
+            if (game.characterImg) {
+                const size = 100;
+                ctx.drawImage(game.characterImg, -size/2, -size - 30 - jumpOffset, size, size);
+            } else {
+                ctx.font = '80px Arial';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText('🏃', 0, -50 - jumpOffset);
+            }
             
             // 跑步特效
-            ctx.font = '20px Arial';
-            const bob = Math.sin(Date.now() * 0.02) * 3;
-            ctx.fillText('💨', -20, 10 + bob);
-            ctx.fillText('💨', 20, 15 - bob);
+            ctx.font = '18px Arial';
+            const bob = Math.sin(Date.now() * 0.015) * 4;
+            ctx.fillStyle = 'rgba(255,255,255,0.7)';
+            ctx.fillText('💨', -25, 5 + bob);
+            ctx.fillText('💨', 25, 10 - bob);
             
             ctx.restore();
         }
