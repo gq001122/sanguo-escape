@@ -1,0 +1,859 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>三国逃亡 - 神庙跑酷</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+        
+        body {
+            background: #000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            min-height: 100dvh;
+            font-family: 'Microsoft YaHei', 'PingFang SC', sans-serif;
+            overflow: hidden;
+            touch-action: none;
+        }
+        
+        #game-container {
+            position: relative;
+            width: 100%;
+            max-width: 500px;
+            aspect-ratio: 9/16;
+            max-height: 100vh;
+            overflow: hidden;
+        }
+        
+        #gameCanvas {
+            width: 100%;
+            height: 100%;
+            display: block;
+        }
+        
+        /* 开始界面 */
+        #start-screen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(180deg, #1a0a00 0%, #2d1810 50%, #4a2820 100%);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 10;
+        }
+        
+        .title {
+            font-size: 2.5em;
+            color: #FFD700;
+            text-shadow: 3px 3px 6px rgba(0,0,0,0.8);
+            margin-bottom: 10px;
+            text-align: center;
+        }
+        
+        .subtitle {
+            font-size: 1em;
+            color: rgba(255,255,255,0.7);
+            margin-bottom: 40px;
+        }
+        
+        .character-select {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+        
+        .char-btn {
+            width: 90px;
+            height: 120px;
+            background: rgba(255,255,255,0.1);
+            border: 2px solid rgba(255,255,255,0.3);
+            border-radius: 10px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .char-btn:hover, .char-btn.selected {
+            border-color: #FFD700;
+            background: rgba(255,215,0,0.2);
+        }
+        
+        .char-icon {
+            font-size: 2.5em;
+            margin-bottom: 5px;
+        }
+        
+        .char-name {
+            color: #fff;
+            font-size: 0.9em;
+        }
+        
+        .char-skill {
+            color: rgba(255,255,255,0.6);
+            font-size: 0.7em;
+            margin-top: 3px;
+        }
+        
+        .start-btn {
+            background: linear-gradient(180deg, #FFD700, #FFA500);
+            color: #000;
+            border: none;
+            padding: 15px 60px;
+            font-size: 1.3em;
+            font-weight: bold;
+            border-radius: 30px;
+            cursor: pointer;
+            margin-top: 20px;
+            box-shadow: 0 5px 15px rgba(255,165,0,0.5);
+        }
+        
+        .start-btn:active {
+            transform: scale(0.95);
+        }
+        
+        .guide {
+            color: rgba(255,255,255,0.5);
+            font-size: 0.8em;
+            margin-top: 30px;
+            text-align: center;
+        }
+        
+        .guide-icon {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            margin-top: 10px;
+        }
+        
+        .guide-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .guide-icon-symbol {
+            font-size: 1.5em;
+        }
+        
+        .guide-text {
+            font-size: 0.7em;
+            color: rgba(255,255,255,0.6);
+        }
+        
+        /* 游戏结束界面 */
+        #gameover-screen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.9);
+            display: none;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 10;
+        }
+        
+        .gameover-title {
+            font-size: 2em;
+            color: #FF4444;
+            margin-bottom: 20px;
+        }
+        
+        .score-display {
+            color: #FFD700;
+            font-size: 3em;
+            margin-bottom: 10px;
+        }
+        
+        .score-label {
+            color: rgba(255,255,255,0.7);
+            font-size: 1em;
+            margin-bottom: 30px;
+        }
+        
+        .best-score {
+            color: rgba(255,255,255,0.5);
+            font-size: 0.9em;
+            margin-bottom: 40px;
+        }
+        
+        /* HUD */
+        #hud {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            padding: 15px;
+            display: none;
+            justify-content: space-between;
+            z-index: 5;
+        }
+        
+        .hud-item {
+            background: rgba(0,0,0,0.5);
+            padding: 8px 15px;
+            border-radius: 20px;
+            color: #fff;
+            font-size: 0.9em;
+        }
+        
+        .score-hud {
+            color: #FFD700;
+            font-weight: bold;
+        }
+        
+        .coin-hud {
+            color: #FFD700;
+        }
+        
+        /* 操作提示 */
+        #control-hint {
+            position: absolute;
+            bottom: 20px;
+            left: 0;
+            width: 100%;
+            display: none;
+            justify-content: center;
+            gap: 20px;
+            z-index: 5;
+        }
+        
+        .hint-item {
+            background: rgba(0,0,0,0.5);
+            padding: 8px 12px;
+            border-radius: 8px;
+            color: rgba(255,255,255,0.7);
+            font-size: 0.8em;
+        }
+    </style>
+</head>
+<body>
+    <div id="game-container">
+        <canvas id="gameCanvas"></canvas>
+        
+        <!-- 开始界面 -->
+        <div id="start-screen">
+            <h1 class="title">🏯 三国逃亡</h1>
+            <p class="subtitle">神庙跑酷 - 三国篇</p>
+            
+            <div class="character-select">
+                <div class="char-btn selected" data-char="liubei">
+                    <span class="char-icon">👑</span>
+                    <span class="char-name">刘备</span>
+                    <span class="char-skill">双倍金币</span>
+                </div>
+                <div class="char-btn" data-char="guanyu">
+                    <span class="char-icon">⚔️</span>
+                    <span class="char-name">关羽</span>
+                    <span class="char-skill">跳跃强化</span>
+                </div>
+                <div class="char-btn" data-char="zhangfei">
+                    <span class="char-icon">🗡️</span>
+                    <span class="char-name">张飞</span>
+                    <span class="char-skill">滑铲强化</span>
+                </div>
+            </div>
+            
+            <button class="start-btn" id="startBtn">开始逃亡</button>
+            
+            <div class="guide">
+                <p>操作方式</p>
+                <div class="guide-icon">
+                    <div class="guide-item">
+                        <span class="guide-icon-symbol">👆</span>
+                        <span class="guide-text">上滑跳跃</span>
+                    </div>
+                    <div class="guide-item">
+                        <span class="guide-icon-symbol">👇</span>
+                        <span class="guide-text">下滑滑铲</span>
+                    </div>
+                    <div class="guide-item">
+                        <span class="guide-icon-symbol">👈👉</span>
+                        <span class="guide-text">左右闪避</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 游戏结束界面 -->
+        <div id="gameover-screen">
+            <h2 class="gameover-title">💀 逃亡失败</h2>
+            <div class="score-display" id="finalScore">0</div>
+            <div class="score-label">米</div>
+            <div class="best-score" id="bestScore">最高纪录: 0米</div>
+            <button class="start-btn" id="restartBtn">再来一次</button>
+        </div>
+        
+        <!-- HUD -->
+        <div id="hud">
+            <div class="hud-item score-hud" id="scoreHud">🏃 0米</div>
+            <div class="hud-item coin-hud" id="coinHud">🪙 0</div>
+        </div>
+    </div>
+
+    <script>
+        // 游戏常量
+        const LANE_COUNT = 3; // 三条跑道
+        const PLAYER_LANE = 1; // 玩家初始在中间
+        const JUMP_DURATION = 500; // 跳跃持续时间(ms)
+        const SLIDE_DURATION = 400; // 滑铲持续时间(ms)
+        
+        // 游戏状态
+        let game = {
+            canvas: null,
+            ctx: null,
+            width: 0,
+            height: 0,
+            running: false,
+            score: 0,
+            coins: 0,
+            bestScore: parseInt(localStorage.getItem('sanguoEscape_best')) || 0,
+            speed: 5,
+            character: 'liubei',
+            player: {
+                lane: PLAYER_LANE,
+                x: 0,
+                y: 0,
+                width: 50,
+                height: 70,
+                jumping: false,
+                sliding: false,
+                jumpStart: 0,
+                slideStart: 0
+            },
+            obstacles: [],
+            coinItems: [],
+            lastObstacleTime: 0,
+            lastCoinTime: 0,
+            touchStartX: 0,
+            touchStartY: 0
+        };
+        
+        // 角色属性
+        const characters = {
+            liubei: { name: '刘备', icon: '👑', jumpBonus: 0, coinBonus: 2, color: '#4169E1' },
+            guanyu: { name: '关羽', icon: '⚔️', jumpBonus: 30, coinBonus: 1, color: '#228B22' },
+            zhangfei: { name: '张飞', icon: '🗡️', jumpBonus: 0, slideBonus: 50, coinBonus: 1, color: '#8B0000' }
+        };
+        
+        // 障碍物类型
+        const obstacleTypes = [
+            { type: 'log', emoji: '🪵', jumpable: true, slideable: false, name: '木桩' },
+            { type: 'rock', emoji: '🪨', jumpable: false, slideable: false, name: '石块' },
+            { type: 'hole', emoji: '🕳️', jumpable: false, slideable: true, name: '矮洞' }
+        ];
+        
+        // 初始化
+        function init() {
+            game.canvas = document.getElementById('gameCanvas');
+            game.ctx = game.canvas.getContext('2d');
+            
+            resizeCanvas();
+            window.addEventListener('resize', resizeCanvas);
+            
+            // 触摸事件
+            game.canvas.addEventListener('touchstart', handleTouchStart, { passive: false });
+            game.canvas.addEventListener('touchmove', handleTouchMove, { passive: false });
+            game.canvas.addEventListener('touchend', handleTouchEnd, { passive: false });
+            
+            // 鼠标事件（用于PC测试）
+            game.canvas.addEventListener('mousedown', handleMouseDown);
+            game.canvas.addEventListener('mousemove', handleMouseMove);
+            game.canvas.addEventListener('mouseup', handleMouseUp);
+            
+            // 键盘事件（用于PC测试）
+            document.addEventListener('keydown', handleKeyDown);
+            
+            // 角色选择
+            document.querySelectorAll('.char-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    document.querySelectorAll('.char-btn').forEach(b => b.classList.remove('selected'));
+                    btn.classList.add('selected');
+                    game.character = btn.dataset.char;
+                });
+            });
+            
+            // 开始按钮
+            document.getElementById('startBtn').addEventListener('click', startGame);
+            document.getElementById('restartBtn').addEventListener('click', startGame);
+            
+            // 更新最高纪录显示
+            document.getElementById('bestScore').textContent = `最高纪录: ${game.bestScore}米`;
+        }
+        
+        function resizeCanvas() {
+            const container = document.getElementById('game-container');
+            const rect = container.getBoundingClientRect();
+            game.canvas.width = rect.width * window.devicePixelRatio;
+            game.canvas.height = rect.height * window.devicePixelRatio;
+            game.width = rect.width;
+            game.height = rect.height;
+            game.ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
+            
+            // 更新玩家位置
+            game.player.width = game.width * 0.12;
+            game.player.height = game.player.width * 1.4;
+            game.player.y = game.height * 0.75;
+            updatePlayerX();
+        }
+        
+        function updatePlayerX() {
+            const laneWidth = game.width / LANE_COUNT;
+            game.player.x = laneWidth * game.player.lane + laneWidth / 2;
+        }
+        
+        // 触摸处理
+        function handleTouchStart(e) {
+            e.preventDefault();
+            if (!game.running) return;
+            const touch = e.touches[0];
+            game.touchStartX = touch.clientX;
+            game.touchStartY = touch.clientY;
+        }
+        
+        function handleTouchMove(e) {
+            e.preventDefault();
+        }
+        
+        function handleTouchEnd(e) {
+            e.preventDefault();
+            if (!game.running) return;
+            
+            const touch = e.changedTouches[0];
+            const deltaX = touch.clientX - game.touchStartX;
+            const deltaY = touch.clientY - game.touchStartY;
+            
+            handleSwipe(deltaX, deltaY);
+        }
+        
+        // 鼠标处理（PC测试）
+        let mouseDown = false;
+        let mouseStartX = 0;
+        let mouseStartY = 0;
+        
+        function handleMouseDown(e) {
+            if (!game.running) return;
+            mouseDown = true;
+            mouseStartX = e.clientX;
+            mouseStartY = e.clientY;
+        }
+        
+        function handleMouseMove(e) {
+            if (!mouseDown) return;
+        }
+        
+        function handleMouseUp(e) {
+            if (!game.running || !mouseDown) return;
+            mouseDown = false;
+            const deltaX = e.clientX - mouseStartX;
+            const deltaY = e.clientY - mouseStartY;
+            handleSwipe(deltaX, deltaY);
+        }
+        
+        // 键盘处理
+        function handleKeyDown(e) {
+            if (!game.running) return;
+            
+            switch(e.key) {
+                case 'ArrowLeft':
+                case 'a':
+                case 'A':
+                    moveLeft();
+                    break;
+                case 'ArrowRight':
+                case 'd':
+                case 'D':
+                    moveRight();
+                    break;
+                case 'ArrowUp':
+                case 'w':
+                case 'W':
+                case ' ':
+                    jump();
+                    break;
+                case 'ArrowDown':
+                case 's':
+                case 'S':
+                    slide();
+                    break;
+            }
+        }
+        
+        // 手势识别
+        function handleSwipe(deltaX, deltaY) {
+            const threshold = 30;
+            
+            if (Math.abs(deltaY) > Math.abs(deltaX)) {
+                // 垂直滑动
+                if (deltaY < -threshold) {
+                    jump();
+                } else if (deltaY > threshold) {
+                    slide();
+                }
+            } else {
+                // 水平滑动
+                if (deltaX < -threshold) {
+                    moveLeft();
+                } else if (deltaX > threshold) {
+                    moveRight();
+                }
+            }
+        }
+        
+        // 玩家操作
+        function moveLeft() {
+            if (game.player.lane > 0) {
+                game.player.lane--;
+                updatePlayerX();
+            }
+        }
+        
+        function moveRight() {
+            if (game.player.lane < LANE_COUNT - 1) {
+                game.player.lane++;
+                updatePlayerX();
+            }
+        }
+        
+        function jump() {
+            if (!game.player.jumping && !game.player.sliding) {
+                game.player.jumping = true;
+                game.player.jumpStart = Date.now();
+                
+                // 关羽跳跃强化
+                const bonus = characters[game.character].jumpBonus || 0;
+                if (bonus > 0) {
+                    setTimeout(() => {
+                        game.player.jumping = false;
+                    }, JUMP_DURATION + bonus);
+                } else {
+                    setTimeout(() => {
+                        game.player.jumping = false;
+                    }, JUMP_DURATION);
+                }
+            }
+        }
+        
+        function slide() {
+            if (!game.player.jumping && !game.player.sliding) {
+                game.player.sliding = true;
+                game.player.slideStart = Date.now();
+                
+                // 张飞滑铲强化
+                const bonus = characters[game.character].slideBonus || 0;
+                if (bonus > 0) {
+                    setTimeout(() => {
+                        game.player.sliding = false;
+                    }, SLIDE_DURATION + bonus);
+                } else {
+                    setTimeout(() => {
+                        game.player.sliding = false;
+                    }, SLIDE_DURATION);
+                }
+            }
+        }
+        
+        // 开始游戏
+        function startGame() {
+            document.getElementById('start-screen').style.display = 'none';
+            document.getElementById('gameover-screen').style.display = 'none';
+            document.getElementById('hud').style.display = 'flex';
+            
+            game.running = true;
+            game.score = 0;
+            game.coins = 0;
+            game.speed = 5;
+            game.player.lane = PLAYER_LANE;
+            game.player.jumping = false;
+            game.player.sliding = false;
+            game.obstacles = [];
+            game.coinItems = [];
+            game.lastObstacleTime = Date.now();
+            game.lastCoinTime = Date.now();
+            
+            updatePlayerX();
+            updateHUD();
+            
+            requestAnimationFrame(gameLoop);
+        }
+        
+        // 游戏循环
+        let lastTime = 0;
+        function gameLoop(timestamp) {
+            if (!game.running) return;
+            
+            const deltaTime = timestamp - lastTime;
+            lastTime = timestamp;
+            
+            update(deltaTime);
+            render();
+            
+            requestAnimationFrame(gameLoop);
+        }
+        
+        // 更新游戏逻辑
+        function update(deltaTime) {
+            // 增加分数和速度
+            game.score += Math.floor(game.speed * 0.5);
+            game.speed = 5 + Math.floor(game.score / 500) * 0.5;
+            
+            // 生成障碍物
+            const now = Date.now();
+            const obstacleInterval = Math.max(800, 1500 - game.speed * 50);
+            
+            if (now - game.lastObstacleTime > obstacleInterval) {
+                spawnObstacle();
+                game.lastObstacleTime = now;
+            }
+            
+            // 生成金币
+            const coinInterval = 500;
+            if (now - game.lastCoinTime > coinInterval) {
+                spawnCoin();
+                game.lastCoinTime = now;
+            }
+            
+            // 更新障碍物
+            game.obstacles = game.obstacles.filter(obs => {
+                obs.y += game.speed * 2;
+                
+                // 碰撞检测
+                if (obs.y + obs.height > game.player.y - game.player.height &&
+                    obs.y < game.player.y + game.player.height / 2) {
+                    if (obs.lane === game.player.lane) {
+                        // 检查是否可以躲避
+                        if (obs.jumpable && game.player.jumping) {
+                            // 跳跃躲避成功
+                        } else if (obs.slideable && game.player.sliding) {
+                            // 滑铲躲避成功
+                        } else {
+                            // 撞到障碍物，游戏结束
+                            gameOver();
+                            return false;
+                        }
+                    }
+                }
+                
+                return obs.y < game.height + 100;
+            });
+            
+            // 更新金币
+            game.coinItems = game.coinItems.filter(coin => {
+                coin.y += game.speed * 2;
+                coin.rotation += 0.1;
+                
+                // 碰撞检测
+                if (coin.y + coin.size > game.player.y - game.player.height &&
+                    coin.y - coin.size < game.player.y + game.player.height / 2) {
+                    if (coin.lane === game.player.lane) {
+                        game.coins += characters[game.character].coinBonus;
+                        updateHUD();
+                    }
+                }
+                
+                return coin.y < game.height + 50;
+            });
+            
+            updateHUD();
+        }
+        
+        // 生成障碍物
+        function spawnObstacle() {
+            const lane = Math.floor(Math.random() * LANE_COUNT);
+            const type = obstacleTypes[Math.floor(Math.random() * obstacleTypes.length)];
+            
+            game.obstacles.push({
+                lane: lane,
+                x: 0,
+                y: -100,
+                width: game.width / LANE_COUNT * 0.6,
+                height: 60,
+                ...type
+            });
+            
+            // 更新x位置
+            const laneWidth = game.width / LANE_COUNT;
+            game.obstacles[game.obstacles.length - 1].x = laneWidth * lane + laneWidth / 2;
+        }
+        
+        // 生成金币
+        function spawnCoin() {
+            const lane = Math.floor(Math.random() * LANE_COUNT);
+            
+            game.coinItems.push({
+                lane: lane,
+                x: 0,
+                y: -50,
+                size: 30,
+                rotation: 0
+            });
+            
+            const laneWidth = game.width / LANE_COUNT;
+            game.coinItems[game.coinItems.length - 1].x = laneWidth * lane + laneWidth / 2;
+        }
+        
+        // 游戏结束
+        function gameOver() {
+            game.running = false;
+            
+            if (game.score > game.bestScore) {
+                game.bestScore = game.score;
+                localStorage.setItem('sanguoEscape_best', game.bestScore);
+            }
+            
+            document.getElementById('finalScore').textContent = game.score;
+            document.getElementById('bestScore').textContent = `最高纪录: ${game.bestScore}米`;
+            document.getElementById('gameover-screen').style.display = 'flex';
+            document.getElementById('hud').style.display = 'none';
+        }
+        
+        // 更新HUD
+        function updateHUD() {
+            document.getElementById('scoreHud').textContent = `🏃 ${Math.floor(game.score)}米`;
+            document.getElementById('coinHud').textContent = `🪙 ${game.coins}`;
+        }
+        
+        // 渲染
+        function render() {
+            const ctx = game.ctx;
+            const w = game.width;
+            const h = game.height;
+            
+            // 清空画布
+            ctx.fillStyle = '#1a0a00';
+            ctx.fillRect(0, 0, w, h);
+            
+            // 绘制跑道背景
+            drawTrack(ctx, w, h);
+            
+            // 绘制金币
+            game.coinItems.forEach(coin => {
+                drawCoin(ctx, coin);
+            });
+            
+            // 绘制障碍物
+            game.obstacles.forEach(obs => {
+                drawObstacle(ctx, obs);
+            });
+            
+            // 绘制玩家
+            drawPlayer(ctx);
+        }
+        
+        // 绘制跑道
+        function drawTrack(ctx, w, h) {
+            const laneWidth = w / LANE_COUNT;
+            
+            // 绘制竹林背景效果
+            ctx.fillStyle = '#0d1a0d';
+            ctx.fillRect(0, 0, w, h);
+            
+            // 绘制跑道
+            ctx.strokeStyle = 'rgba(255,255,255,0.1)';
+            ctx.lineWidth = 2;
+            
+            for (let i = 1; i < LANE_COUNT; i++) {
+                ctx.beginPath();
+                ctx.setLineDash([20, 10]);
+                ctx.moveTo(laneWidth * i, 0);
+                ctx.lineTo(laneWidth * i, h);
+                ctx.stroke();
+            }
+            
+            // 绘制移动的地面线（模拟奔跑效果）
+            ctx.strokeStyle = 'rgba(139,90,43,0.3)';
+            const lineCount = 10;
+            const offset = (Date.now() * game.speed * 0.5) % (h / lineCount);
+            ctx.lineWidth = 1;
+            
+            for (let i = 0; i < lineCount; i++) {
+                const y = (i * h / lineCount + offset) % h;
+                ctx.beginPath();
+                ctx.moveTo(0, y);
+                ctx.lineTo(w, y);
+                ctx.stroke();
+            }
+        }
+        
+        // 绘制玩家
+        function drawPlayer(ctx) {
+            const p = game.player;
+            const char = characters[game.character];
+            
+            ctx.save();
+            ctx.translate(p.x, p.y);
+            
+            // 跳跃效果
+            if (p.jumping) {
+                ctx.translate(0, -30);
+            }
+            
+            // 滑铲效果
+            if (p.sliding) {
+                ctx.scale(1.2, 0.6);
+            }
+            
+            // 绘制角色
+            ctx.font = `${p.height * 0.8}px Arial`;
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText(char.icon, 0, 0);
+            
+            // 绘制名字
+            ctx.font = '12px Microsoft YaHei';
+            ctx.fillStyle = char.color;
+            ctx.fillText(char.name, 0, p.height / 2 + 10);
+            
+            ctx.restore();
+        }
+        
+        // 绘制障碍物
+        function drawObstacle(ctx, obs) {
+            ctx.save();
+            ctx.translate(obs.x, obs.y);
+            
+            ctx.font = `${obs.height}px Arial`;
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText(obs.emoji, 0, 0);
+            
+            ctx.restore();
+        }
+        
+        // 绘制金币
+        function drawCoin(ctx, coin) {
+            ctx.save();
+            ctx.translate(coin.x, coin.y);
+            ctx.rotate(coin.rotation);
+            
+            ctx.font = `${coin.size}px Arial`;
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText('🪙', 0, 0);
+            
+            ctx.restore();
+        }
+        
+        // 启动
+        init();
+    </script>
+</body>
+</html>
