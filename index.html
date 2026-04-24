@@ -803,8 +803,8 @@
                     const scale = 300 / (300 + relZ);
                     const screenY = horizon + (playerScreenY - horizon) * scale;
                     
-                    // 修复：道路角度偏移方向
-                    const angleOffset = -seg.angle * 0.8 * (relZ / 300);
+                    // 修复：道路角度偏移（seg.angle正=左转，投影到屏幕远景应向右）
+                    const angleOffset = seg.angle * 0.8 * (relZ / 300);
                     const roadWidth = ROAD_WIDTH * scale;
                     const centerX = w/2 + angleOffset;
                     const leftX = centerX - roadWidth/2;
@@ -884,7 +884,7 @@
                 // 计算装饰物位置的道路偏移
                 const currentSeg = getSegmentAtZ(dec.z);
                 const segAngle = currentSeg ? currentSeg.angle : 0;
-                const angleOffset = -segAngle * 0.8 * (relZ / 300);
+                const angleOffset = segAngle * 0.8 * (relZ / 300);
                 const centerX = w/2 + angleOffset;
                 
                 let screenX;
@@ -921,7 +921,7 @@
                 // 计算金币位置的道路偏移
                 const currentSeg = getSegmentAtZ(coin.z);
                 const segAngle = currentSeg ? currentSeg.angle : 0;
-                const angleOffset = -segAngle * 0.8 * (relZ / 300);
+                const angleOffset = segAngle * 0.8 * (relZ / 300);
                 const centerX = w/2 + angleOffset;
                 const laneOffset = (coin.lane - 1) * 50 * scale;
                 const screenX = centerX + laneOffset;
@@ -964,7 +964,7 @@
                 // 计算障碍物位置的道路偏移
                 const currentSeg = getSegmentAtZ(obs.z);
                 const segAngle = currentSeg ? currentSeg.angle : 0;
-                const angleOffset = -segAngle * 0.8 * (relZ / 300);
+                const angleOffset = segAngle * 0.8 * (relZ / 300);
                 const centerX = w/2 + angleOffset;
                 const laneOffset = (obs.lane - 1) * 50 * scale;
                 const screenX = centerX + laneOffset;
